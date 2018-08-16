@@ -45,21 +45,29 @@ fn test_parse_complex() {
 fn pixel_to_point(
     bounds: (usize, usize),
     pixel: (usize, usize),
-    upper_left: (f64, f64),
-    lower_right: (f64, f64),
-) -> (f64, f64) {
-    let (width, height) = (lower_right.0 - upper_left.0, upper_left.1 - lower_right.1);
-    (
-        upper_left.0 + pixel.0 as f64 * width / bounds.0 as f64,
-        upper_left.1 - pixel.1 as f64 * height / bounds.1 as f64,
-    )
+    upper_left: Complex<f64>,
+    lower_right: Complex<f64>,
+) -> Complex<f64> {
+    let (width, height) = (
+        lower_right.re - upper_left.re,
+        upper_left.im - lower_right.im,
+    );
+    Complex {
+        re: upper_left.re + pixel.0 as f64 * width / bounds.0 as f64,
+        im: upper_left.im - pixel.1 as f64 * height / bounds.1 as f64,
+    }
 }
 
 #[test]
 fn test_pixel_to_point() {
     assert_eq!(
-        pixel_to_point((100, 100), (25, 75), (-1.0, 1.0), (1.0, -1.0)),
-        (-0.5, -0.5)
+        pixel_to_point(
+            (100, 100),
+            (25, 75),
+            Complex { re: -1.0, im: 1.0 },
+            Complex { re: 1.0, im: -1.0 }
+        ),
+        Complex { re: -0.5, im: -0.5 }
     );
 }
 
@@ -87,8 +95,8 @@ fn complex_square_add_loop(c: Complex<f64>) {
 fn render(
     pixels: &mut [u8],
     bounds: (usize, usize),
-    upper_left: (f64, f64),
-    lower_right: (f64, f64),
+    upper_left: Complex<f64>,
+    lower_right: Complex<f64>,
 ) {
     assert!(pixels.len() == bounds.0 * bounds.1);
 
@@ -114,7 +122,9 @@ fn write_image(
     pixels: &[u8],
     bounds: (usize, usize),
 ) -> Result<(), std::io::Error> {
+    let output = File::create(filename)?;
     let encoder = PNGEncoder::new(output);
+
     encoder.encode(
         &pixels,
         bounds.0 as u32,

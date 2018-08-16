@@ -5,3 +5,4 @@ authors = ["chansuke <moonset20@gmail.com>"]
 
 [dependencies]
 num = "0.1.27"
+image = "0.13.0"

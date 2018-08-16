@@ -95,13 +95,34 @@ fn render(
     for r in 0..bounds.1 {
         for c in 0..bounds.0 {
             let point = pixel_to_point(bounds, (c, r), upper_left, lower_right);
-
             pixels[r * bounds.0 + c] = match escape_time(point, 255) {
                 None => 0,
                 Some(count) => 255 - count as u8,
             };
         }
     }
+}
+
+extern crate image;
+
+use image::png::PNGEncoder;
+use image::ColorType;
+use std::fs::File;
+
+fn write_image(
+    filename: &str,
+    pixels: &[u8],
+    bounds: (usize, usize),
+) -> Result<(), std::io::Error> {
+    let encoder = PNGEncoder::new(output);
+    encoder.encode(
+        &pixels,
+        bounds.0 as u32,
+        bounds.1 as u32,
+        ColorType::Gray(8),
+    )?;
+
+    Ok(())
 }
 
 fn main() {}
